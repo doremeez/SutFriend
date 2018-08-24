@@ -20,6 +20,7 @@ public class MainFragment extends Fragment{
 
     }   // Main Method
 
+
     private void registerController() {
         TextView textView = getView().findViewById(R.id.txtNewRegister);
         textView.setOnClickListener(new View.OnClickListener() {
