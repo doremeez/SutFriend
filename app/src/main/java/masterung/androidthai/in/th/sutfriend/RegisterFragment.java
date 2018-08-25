@@ -12,16 +12,26 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
-public class RegisterFragment extends Fragment{
+
+public class RegisterFragment extends Fragment {
 
     private ImageView imageView;
     private Uri uri;
+    private boolean aBoolean = true;
+    private String nameString, emailString, passwordString;
 
 
     @Override
@@ -36,15 +46,75 @@ public class RegisterFragment extends Fragment{
     } //Main Method
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.itemUpload) {
+
+            checkUpload();
+
+            return true;
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void checkUpload() {
+        MyAlert myAlert = new MyAlert(getActivity());
+        EditText nameEditText = getView().findViewById(R.id.editName);
+        EditText emailEditText = getView().findViewById(R.id.editEmail);
+        EditText passwordEditText = getView().findViewById(R.id.editPassword);
+
+        nameString = nameEditText.getText().toString().trim();
+        emailString = emailEditText.getText().toString().trim();
+        passwordString = passwordEditText.getText().toString().trim();
+
+
+        if (aBoolean) {
+            myAlert.normalDialog("Non choose image",
+                    "Please choose image");
+        } else if (nameString.isEmpty() || emailString.isEmpty()||passwordString.isEmpty()) {
+            //Have Space
+            myAlert.normalDialog("Have Space",
+                    "Please fill Every Blank");
+        } else {
+                //No Space
+            uploadAvata();
+
+        }
+    }   //check upload
+
+    private void uploadAvata() {
+        FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+        StorageReference storageReference = firebaseStorage.getReference();
+        StorageReference storageReference1 = storageReference.child("Avata/" + nameString);
+        storageReference1.putFile(uri)
+        .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(getActivity(),"Success Upload Avata", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getActivity(),"Cannot Upload ==> " + e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == getActivity().RESULT_OK) {
             uri = data.getData();
+            aBoolean = false;
+
             try {
 
                 Bitmap bitmap = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(uri));
-                Bitmap resizeBitmap1 = Bitmap.createScaledBitmap(bitmap,800,480,true);
+                Bitmap resizeBitmap1 = Bitmap.createScaledBitmap(bitmap, 800, 480, true);
                 imageView.setImageBitmap(resizeBitmap1);
 
 
@@ -53,7 +123,7 @@ public class RegisterFragment extends Fragment{
             }
 
         } else {
-            Toast.makeText(getActivity(),"Please choose image",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Please choose image", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -64,7 +134,7 @@ public class RegisterFragment extends Fragment{
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
-                startActivityForResult(Intent.createChooser(intent,"Please choose App"),5);
+                startActivityForResult(Intent.createChooser(intent, "Please choose App"), 5);
             }
         });
 
@@ -74,12 +144,12 @@ public class RegisterFragment extends Fragment{
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
-        inflater.inflate(R.menu.menu_register,menu);
+        inflater.inflate(R.menu.menu_register, menu);
     }
 
     private void createToolbar() {
         Toolbar toolbar = getView().findViewById(R.id.toolbarRegister);
-        ((MainActivity)getActivity()).setSupportActionBar(toolbar);
+        ((MainActivity) getActivity()).setSupportActionBar(toolbar);
 
         ((MainActivity) getActivity()).getSupportActionBar().setTitle(R.string.register);
         ((MainActivity) getActivity()).getSupportActionBar().setSubtitle("Please Fill all Blank");
