@@ -1,16 +1,27 @@
 package masterung.androidthai.in.th.sutfriend;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 
 public class RegisterFragment extends Fragment{
+
+    private ImageView imageView;
+    private Uri uri;
 
 
     @Override
@@ -18,7 +29,53 @@ public class RegisterFragment extends Fragment{
         super.onActivityCreated(savedInstanceState);
 //        Create Toolbar
         createToolbar();
+
+//        Avata Controller
+        avataController();
+
     } //Main Method
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == getActivity().RESULT_OK) {
+            uri = data.getData();
+            try {
+
+                Bitmap bitmap = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(uri));
+                Bitmap resizeBitmap1 = Bitmap.createScaledBitmap(bitmap,800,480,true);
+                imageView.setImageBitmap(resizeBitmap1);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            Toast.makeText(getActivity(),"Please choose image",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void avataController() {
+        imageView = getView().findViewById(R.id.imvAvata);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                startActivityForResult(Intent.createChooser(intent,"Please choose App"),5);
+            }
+        });
+
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        inflater.inflate(R.menu.menu_register,menu);
+    }
 
     private void createToolbar() {
         Toolbar toolbar = getView().findViewById(R.id.toolbarRegister);
@@ -36,6 +93,8 @@ public class RegisterFragment extends Fragment{
                 getActivity().getSupportFragmentManager().popBackStack();
             }
         });
+
+        setHasOptionsMenu(true);
     }
 
     @Nullable
