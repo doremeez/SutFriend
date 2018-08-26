@@ -1,5 +1,6 @@
 package masterung.androidthai.in.th.sutfriend;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,8 +20,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -84,6 +89,12 @@ public class RegisterFragment extends Fragment {
     }   //check upload
 
     private void uploadAvata() {
+
+        final ProgressDialog progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle("Process Upload Image");
+        progressDialog.setMessage("Please Wait Few Minus...");
+        progressDialog.show();
+
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         StorageReference storageReference = firebaseStorage.getReference();
         StorageReference storageReference1 = storageReference.child("Avata/" + nameString);
@@ -92,15 +103,39 @@ public class RegisterFragment extends Fragment {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Toast.makeText(getActivity(),"Success Upload Avata", Toast.LENGTH_SHORT).show();
+                progressDialog.dismiss();
+                registerEmail();
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(getActivity(),"Cannot Upload ==> " + e.getMessage().toString(), Toast.LENGTH_SHORT).show();
+                progressDialog.dismiss();
             }
         });
 
     }
+
+    private void registerEmail() {
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAuth.createUserWithEmailAndPassword(emailString,passwordString)
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+                        if (task.isSuccessful()) {
+//                            Successs
+                        } else {
+//                            Non success
+                            MyAlert myAlert = new MyAlert(getActivity());
+                            myAlert.normalDialog("Register False",task.getException().getMessage().toString());
+                        }
+
+                    }
+                });
+
+    } //registerEmail
 
 
     @Override
