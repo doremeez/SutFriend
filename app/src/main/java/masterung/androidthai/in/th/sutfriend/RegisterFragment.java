@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -126,6 +127,9 @@ public class RegisterFragment extends Fragment {
 
                         if (task.isSuccessful()) {
 //                            Successs
+                            updateDatabase();
+
+
                         } else {
 //                            Non success
                             MyAlert myAlert = new MyAlert(getActivity());
@@ -136,6 +140,47 @@ public class RegisterFragment extends Fragment {
                 });
 
     } //registerEmail
+
+    private void updateDatabase() {
+        //Find UID
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        final String uidString = firebaseAuth.getUid();
+        Log.d("26AugV1","uid ==> "+uidString);
+
+//        Find URL of Avata
+        final String urlAvataString = null;
+        try {
+            FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
+            StorageReference storageReference = firebaseStorage.getReference();
+
+            final String[] strings = new String[1];
+            storageReference.child("Avata").child(nameString)
+                    .getDownloadUrl()
+                    .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+
+                            strings[0] = uri.toString();
+                            Log.d("26AugV1", "url ==>" + strings[0]);
+                            insertValueToFirebase(uidString,strings[0]);
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d("26AugV1","e Storage ==>" + e.toString());
+                }
+            });
+
+
+        } catch (Exception e) {
+            Log.d("26AugV1","e ==>" + e.toString());
+        }
+    }// updateDatabase
+
+    private void insertValueToFirebase(String uidString, String urlAvataString) {
+
+
+    }
 
 
     @Override

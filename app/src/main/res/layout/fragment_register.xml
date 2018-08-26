@@ -48,7 +48,7 @@
                 android:id="@+id/editEmail"
                 android:background="@drawable/textfield_email"
                 android:textSize="@dimen/h3"
-                android:inputType="text"
+                android:inputType="textEmailAddress"
                 android:hint="Email :"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
